@@ -78,7 +78,6 @@ const registerUser = asyncHandler(async (req, res, next) => {
   
 });
 
-
 const confirmEmail = asyncHandler(async (req, res, next) => {
 
   // Get hashed token
@@ -98,14 +97,17 @@ const confirmEmail = asyncHandler(async (req, res, next) => {
   }
 
   // Confirm user
-  const updatedUser = await User.updateOne({
-    _id: user._id,
-  }, {
-    $set: {
-    is_verified : true,
-    confirmSignupToken : undefined,
+  const updatedUser = await User.updateOne(
+    {
+      _id: user._id,
+    },
+    {
+      $set: {
+        verified: true,
+        confirmSignupToken: undefined,
+      },
     }
-  })
+  );
   
   // Set token response to redirect user to login page
   sendConfirmResponse(user, 200, res);
@@ -113,10 +115,50 @@ const confirmEmail = asyncHandler(async (req, res, next) => {
 
 const login = asyncHandler(async (req, res, next) => {
   
+  const { user_name , password } = req.body;
 
-  return next(new ErrorResponse('Unable to create user, an error occured', 400));
+  try {
+
+    // Validate user_name and password
+    if (!user_name || !password) {
+      return next(new ErrorResponse('Please fill all fields', 400));
+    }
+
+    // Find for user
+    const user = await User.findOne({
+      $or: [
+        { email: user_name },
+        {
+          phone_number: user_name,
+        },
+      ],
+    }).select('+password');
+
+    if (!user) {
+      return next(new ErrorResponse('Invalid credentials', 401));
+    }
+
+    // Throw error is user has not been verified
+    if (!user.verified) {
+      return next(new ErrorResponse('Please verify your email before you can login', 401));
+    }
+
+    if (user) {
+      // Check if password matches then login user
+      const isMatch = await user.matchPassword(password);
+      if (!isMatch) {
+        return next(new ErrorResponse('Invalid credentials', 401));
+      }
+
+      // Send response
+      sendTokenResponse(user, 200, res);
+    }
+  } catch (error) {
+    console.log(error)
+    return next(new ErrorResponse('Internal server error', 500));
+  }
+
 });
-
 
 // Get token from model, create cookie and send response
 const sendTokenResponse = async (user, statusCode, res) => {
@@ -160,10 +202,7 @@ const sendConfirmResponse = async ( user, statusCode, res) => {
     options.secure = true;
   }
 
-  console.log(res, "res")
-
-  console.log(process.env.FRONTEND_URL, "mgongL");
-
+  // Redirect to login page
   res.redirect(`${process.env.FRONTEND_URL}`)
 };
 
