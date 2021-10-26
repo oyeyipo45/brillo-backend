@@ -32,7 +32,18 @@ const UserSchema = mongoose.Schema(
       type: String,
       require: [true, 'Please enter password'],
     },
-    is_Verified: {
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
+    confirmSignupToken: {
+      type: String,
+      select: false,
+      require: true,
+    },
+    confirmSignupExpire: {
+      type: Date,
+      select: false,
+    },
+    is_verified: {
       type: Boolean,
       require: true,
       default: false,

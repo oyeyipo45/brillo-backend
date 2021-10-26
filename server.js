@@ -14,6 +14,7 @@ import connectDB from './config/db.js'
 
 dotenv.config();
 
+
 const app = express();
 
 connectDB()
@@ -59,8 +60,6 @@ app.use(`/api/v1/auth`, authRoute);
 
 app.use(notFound);
 app.use(errorHandler);
-
-
 
 
 const PORT = process.env.PORT || 4000;

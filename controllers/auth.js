@@ -2,6 +2,11 @@ import User from '../models/user.js';
 import asyncHandler from 'express-async-handler';
 import ErrorResponse from '../utils/errorResponse.js';
 import sendEmail from "../utils/sendEmail.js"
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 
 
@@ -37,16 +42,23 @@ const registerUser = asyncHandler(async (req, res, next) => {
   if (user) {
     // Get signup confirmation token
     const signupToken = user.getConfirmSignupToken();
+    await user.save({
+      validateBeforeSave: false,
+    });
 
     // Create and send confirmation email
     const signupConfirmUrl = `${req.protocol}://${req.get('host')}/api/v1/auth/confirm_signup/${signupToken}`;
-    const message = `Hi ${user.name},<br><br>To verify your email address (${user.email}), Please
+    const message =
+      `Hi ${user.name},
+      <br><br>To verify your email address (${user.email}),
+      Please
         <a href="${signupConfirmUrl}"> Click here</a> OR <br><br> Copy and paste the link below in your browser <br>
         <a href="${signupConfirmUrl}">${signupConfirmUrl}</a>
         <br><br>Thank you, <br>Brillo`;
 
     try {
       await sendEmail({
+        brand_name: "Brillo",
         email: user.email,
         subject: 'Please verify your email address',
         message,
@@ -67,5 +79,94 @@ const registerUser = asyncHandler(async (req, res, next) => {
 });
 
 
+const confirmEmail = asyncHandler(async (req, res, next) => {
 
-export { registerUser };
+  // Get hashed token
+  const confirmSignupToken = crypto
+    .createHash("sha256")
+    .update(req.params.confirmToken)
+    .digest("hex");
+  
+  console.log(confirmSignupToken)
+  
+  // Find user with token
+  const user = await User.findOne({ confirmSignupToken });
+
+  // Return error if no user is found
+  if (!user) {
+    return next(new ErrorResponse("Invalid token", 400));
+  }
+
+  // Confirm user
+  const updatedUser = await User.updateOne({
+    _id: user._id,
+  }, {
+    $set: {
+    is_verified : true,
+    confirmSignupToken : undefined,
+    }
+  })
+  
+  // Set token response to redirect user to login page
+  sendConfirmResponse(user, 200, res);
+});
+
+const login = asyncHandler(async (req, res, next) => {
+  
+
+  return next(new ErrorResponse('Unable to create user, an error occured', 400));
+});
+
+
+// Get token from model, create cookie and send response
+const sendTokenResponse = async (user, statusCode, res) => {
+  user.password = undefined;
+  user.__v = undefined;
+  user.resetPasswordExpire = undefined;
+  user.resetPasswordToken = undefined;
+
+  // Create token
+  try {
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+    ),
+    httpOnly: true,
+  };
+
+  if (process.env.NODE_ENV === "production") {
+    options.secure = true;
+  }
+ 
+  res.status(statusCode).json({
+    success: true,
+    token,
+    user,
+  });
+  } catch (error) {
+    console.log(error)
+    return next(new ErrorResponse('Internal server error', 500));
+  }
+};
+
+// Get token from model, create cookie and redirect to dashboard
+const sendConfirmResponse = async ( user, statusCode, res) => {
+  // Create token
+  const token = user.getSignedJwtToken();
+
+  if (process.env.NODE_ENV === "production") {
+    options.secure = true;
+  }
+
+  console.log(res, "res")
+
+  console.log(process.env.FRONTEND_URL, "mgongL");
+
+  res.redirect(`${process.env.FRONTEND_URL}`)
+};
+
+
+
+export { registerUser, login, confirmEmail };
