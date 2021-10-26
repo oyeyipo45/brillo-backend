@@ -1,21 +1,22 @@
-import express from 'express';
 import path from 'path';
+import express from 'express';
 import dotenv from 'dotenv';
 import mongoSanitize from 'express-mongo-sanitize';
 import helmet from 'helmet';
 import xss from 'xss-clean';
-import hpp from 'hpp'
+import hpp from 'hpp';
 import rateLimit from 'express-rate-limit';
 import cors from 'cors';
-import morgan from 'morgan' 
-// import { notFound, errorHandler } from '../middleware/errorMiddleware';
+import morgan from 'morgan';
+import { notFound } from './middleware/errorMiddleware'
+import { user } from '../brillo-backend/routes/user';
 
 dotenv.config();
 
 const app = express();
 
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 }
 app.use(express.json());
 
@@ -42,14 +43,12 @@ app.use(limiter);
 //Prevent HTTP params pollution
 app.use(hpp());
 
+// App routes
+app.use(`/api/v1/users`, user);
+
 // app.use(notFound);
 // app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(
-  PORT,
-  console.log(
-    `app running in  ${process.env.NODE_ENV} mode  on PORT ${PORT}`
-  )
-);
+app.listen(PORT, console.log(`app running in  ${process.env.NODE_ENV} mode  on PORT ${PORT}`));
