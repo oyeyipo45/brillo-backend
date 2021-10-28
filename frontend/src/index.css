@@ -1035,9 +1035,14 @@ textarea {
   color: #007cff;
 }
 
-
 .form-group {
   display: block;
   width: 100%;
   margin-bottom: 20px;
+}
+
+.align-buttons{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }

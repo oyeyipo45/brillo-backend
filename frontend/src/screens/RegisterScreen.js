@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { register } from "../redux/actions/userActions";
-import PhoneInput from 'react-phone-input-2';
 
 const RegisterScreen = ({ location, history }) => {
   const [name, setName] = useState("");
@@ -21,7 +20,7 @@ const RegisterScreen = ({ location, history }) => {
 
   useEffect(() => {
     if (userInfo) {
-      history.push(redirect);
+      history.push('/confirmation');
     }
   }, [history, userInfo, redirect]);
 
