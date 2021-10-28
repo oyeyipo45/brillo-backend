@@ -3,7 +3,6 @@ import asyncHandler from 'express-async-handler';
 import ErrorResponse from '../utils/errorResponse.js';
 import sendEmail from "../utils/sendEmail.js"
 import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -36,7 +35,8 @@ const registerUser = asyncHandler(async (req, res, next) => {
     email,
     password,
     phone_number,
-    interest
+    interest,
+    profile_picture: 'https://ih1.redbubble.net/image.1046392278.3346/aps,504x498,small,transparent-pad,600x600,f8f8f8.jpg',
   });
 
   if (user) {
@@ -124,7 +124,7 @@ const login = asyncHandler(async (req, res, next) => {
       return next(new ErrorResponse('Please fill all fields', 400));
     }
 
-    // Find for user
+    // Find user with email or phone_number
     const user = await User.findOne({
       $or: [
         { email: user_name },
