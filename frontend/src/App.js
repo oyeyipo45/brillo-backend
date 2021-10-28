@@ -11,7 +11,7 @@ const LoginScreen = React.lazy(() => import('./screens/LoginScreen'));
 const ProfileScreen = React.lazy(() => import('./screens/ProfileScreen'));
 const NotFound = React.lazy(() => import('./screens/NotFound'));
 const ConfirmationScreen = React.lazy(() => import('./screens/ConfirmationScreen'));
-const ForgotPasswordScreen = React.lazy(() => import('./screens/ForgotPasswordScreen'));
+const ForgetPasswordScreen = React.lazy(() => import('./screens/ForgetPasswordScreen'));
 
 
 
@@ -28,7 +28,7 @@ const App = () => {
               <Route path='/login' component={LoginScreen} />
               <Route path='/' exact component={HomeScreen} />
               <Route path='/confirmation' exact component={ConfirmationScreen} />
-              <Route path='/forgot-password' exact component={ForgotPasswordScreen} />
+              <Route path='/forgot-password' exact component={ForgetPasswordScreen} />
               <Route component={NotFound} />
             </Switch>
           </main>

@@ -10,7 +10,7 @@ import {
   userUpdateProfileReducer,
   userDeleteReducer,
   userUpdateReducer,
-  passwordResetReducer,
+  passwordForgetReducer,
 } from './reducers/userReducers';
 
 const reducer = combineReducers({
@@ -20,7 +20,7 @@ const reducer = combineReducers({
   userUpdateProfile: userUpdateProfileReducer,
   userDelete: userDeleteReducer,
   userUpdate: userUpdateReducer,
-  passwordReset: passwordResetReducer,
+  passwordForgot: passwordForgetReducer,
 });
 
 const userInfoFromStorage = localStorage.getItem("userInfo")

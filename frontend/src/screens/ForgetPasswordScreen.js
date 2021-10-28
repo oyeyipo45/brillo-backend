@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { resetPassword } from '../redux/actions/userActions';
+import { forgetPassword } from '../redux/actions/userActions';
 
-const ForgotPasswordScreen = ({ location, history }) => {
+const ForgetPasswordScreen = ({ location, history }) => {
   const [user_name, setUser_name] = useState('');
   const [message, setMessage] = useState(null);
 
@@ -25,7 +24,7 @@ const ForgotPasswordScreen = ({ location, history }) => {
     if (!user_name) {
       setMessage('Please fill all fields');
     } else {
-      dispatch(resetPassword(user_name));
+      dispatch(forgetPassword(user_name));
     }
   };
 
@@ -33,7 +32,7 @@ const ForgotPasswordScreen = ({ location, history }) => {
     <div className='login'>
       <div className='customer-signin'>
         <div className='customer-signin-header'>
-          <h3 className='customer-signin-heading'>Log In</h3>
+          <h3 className='customer-signin-heading'>Reset Password</h3>
 
           {message && <p>{message}</p>}
           {error && <p className='color-red'>{error}</p>}
@@ -65,4 +64,4 @@ const ForgotPasswordScreen = ({ location, history }) => {
   );
 };
 
-export default ForgotPasswordScreen;
+export default ForgetPasswordScreen

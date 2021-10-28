@@ -11,7 +11,10 @@ dotenv.config();
 
 const registerUser = asyncHandler(async (req, res, next) => {
   // User input
-  const { name, email, password, interest, phone_number, confirm_password } = req.body;
+  const { name, email, interest, phone_number, password, confirm_password } = req.body;
+
+  console.log("conritm", confirm_password);
+   console.log( password, "pass");
 
   // Validate User input
   if (!name || !email || !password || !interest ||  !phone_number || !confirm_password) {
@@ -22,11 +25,18 @@ const registerUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Passwords do not match', 400));
   }
 
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({
+    $or: [
+      { email: email },
+      {
+        phone_number: phone_number,
+      },
+    ],
+  });
 
   // Validate for existing user with entered email
   if (userExists) {
-    return next(new ErrorResponse('A user already exists with the email', 400));
+    return next(new ErrorResponse('A user already exists with the email or phone number', 400));
   }
 
   // Create user
@@ -160,6 +170,66 @@ const login = asyncHandler(async (req, res, next) => {
 
 });
 
+
+const forgotPassword = asyncHandler(async (req, res, next) => {
+  
+  // Find user with email or phone number
+  const user = await User.findOne({
+    $or: [
+      { email: user_name },
+      {
+        phone_number: user_name,
+      },
+    ],
+  });
+
+  // Validate user
+  if (!user) {
+    return next(new ErrorResponse("There is no user with that email or phone number", 404));
+  }
+
+  // Get reset token
+  const resetToken = user.getResetPasswordToken();
+
+  await user.save({
+    validateBeforeSave: false,
+  });
+
+  // Create reset url
+  const resetUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/api/auth/resetpassword/${resetToken}`;
+
+  const message = `You are receiving this email because you (or someone else) has requested the reset of a password. Please click on the link below to reset your password: <br><br>
+    <a href="${resetUrl}">${resetUrl}</a>`;
+
+  try {
+    // Send eail with reset password instructions
+    await sendEmail({
+      brand_name: "Brillo",
+      email: user.email,
+      subject: 'Password reset token',
+      message,
+    }); 
+
+    // Send response message
+    return res.status(200).json({
+      success: true,
+      data: 'Reset password instructions sent',
+    });
+  } catch (err) {
+    // set token to undefined on error
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save({
+      validateBeforeSave: false,
+    });
+
+    next(new ErrorResponse("Email could not be sent", 500));
+  }
+});
+
 // Get token from model, create cookie and send response
 const sendTokenResponse = async (user, statusCode, res) => {
   user.password = undefined;
@@ -208,4 +278,4 @@ const sendConfirmResponse = async ( user, statusCode, res) => {
 
 
 
-export { registerUser, login, confirmEmail };
+export { registerUser, login, confirmEmail, forgotPassword };

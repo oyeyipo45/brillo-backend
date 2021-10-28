@@ -19,9 +19,9 @@ import {
   USER_UPDATE_REQUEST,
   USER_UPDATE_SUCCESS,
   USER_UPDATE_FAIL,
-  USER_RESET_REQUEST,
-  USER_RESET_SUCCESS,
-  USER_RESET_FAIL,
+  USER_FORGET_PASSWORD_REQUEST,
+  USER_FORGET_PASSWORD_SUCCESS,
+  USER_FORGET_PASSWORD_FAIL,
 } from '../constants/userConstants';
 import axios from "axios";
 
@@ -251,10 +251,10 @@ export const updateUser = (user) => async (dispatch, getState) => {
 };
 
 
-export const resetPassword = (user_name, password) => async (dispatch) => {
+export const forgetPassword = (user_name) => async (dispatch) => {
   try {
     dispatch({
-      type: USER_RESET_REQUEST,
+      type: USER_FORGET_PASSWORD_REQUEST,
     });
 
     const config = {
@@ -263,16 +263,16 @@ export const resetPassword = (user_name, password) => async (dispatch) => {
       },
     };
 
-    const { data } = await axios.post(`/api/v1/auth/forgot-password`, { user_name, password }, config);
+    const { data } = await axios.post(`/api/v1/auth/forgot-password`, { user_name}, config);
 
     dispatch({
-      type: USER_RESET_SUCCESS,
+      type: USER_FORGET_PASSWORD_SUCCESS,
       payload: data,
     });
 
   } catch (error) {
     dispatch({
-      type: USER_RESET_FAIL,
+      type: USER_FORGET_PASSWORD_FAIL,
       payload: error.response && error.response.data.message ? error.response.data.message : error.message,
     });
   }
