@@ -1034,3 +1034,10 @@ textarea {
   text-align: center;
   color: #007cff;
 }
+
+
+.form-group {
+  display: block;
+  width: 100%;
+  margin-bottom: 20px;
+}
